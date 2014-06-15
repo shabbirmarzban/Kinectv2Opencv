@@ -12,13 +12,10 @@
 using namespace cv;
 using namespace std;
 
-
-void writeFile (CameraSpacePoint myCamPoints[100*100], int i) ;
 int main( int argc, char* argv[] )
 {
 	CK4Wv2OpenCVModule myKinect;
 	myKinect.InitializeKinectDevice();
-	int i =1;
     for(;;){
 		myKinect.UpdateData();
 		Mat irFrame = myKinect.colorRAWFrameMat;
@@ -31,14 +28,3 @@ int main( int argc, char* argv[] )
     return 0;
 }
 
-void writeFile (CameraSpacePoint myCamPoints[100*100], int i) 
-{
-	std::ofstream myfile;
-	std::ostringstream o;
-	o << "head" << i<< ".txt";
-	myfile.open (o.str());
-	for (int j =0 ; j < 100*100 ; j++)
-		myfile << myCamPoints[j].X << " "<<myCamPoints[j].Y  << " " <<myCamPoints[j].Z << endl;
-	myfile.close();
-
-}
