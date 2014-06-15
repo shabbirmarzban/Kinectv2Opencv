@@ -6,9 +6,6 @@
 #include <math.h>
 #include "K4Wv2OpenCVModule.h"
 
-#define WINSIZE 120
-#define WINSIZECOLOR 150
-
 using namespace cv;
 using namespace std;
 
@@ -18,8 +15,8 @@ int main( int argc, char* argv[] )
 	myKinect.InitializeKinectDevice();
     for(;;){
 		myKinect.UpdateData();
-		Mat irFrame = myKinect.colorRAWFrameMat;
-		imshow("DepthImage",irFrame);
+		Mat colorFrame = myKinect.colorRAWFrameMat;
+		imshow("DepthImage",colorFrame);
 
 		if( waitKey( 30 ) >= 0 )
             break;
