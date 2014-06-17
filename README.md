@@ -1,6 +1,5 @@
 Kinectv2Opencv
 ==============
-This rep modifies the one provided by https://github.com/DevHwan/K4Wv2OpenCVModule
 
 Features:
 
