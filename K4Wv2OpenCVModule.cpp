@@ -15,7 +15,7 @@ CK4Wv2OpenCVModule::CK4Wv2OpenCVModule()
 	pColorRAWBuffer = new RGBQUAD[COLOR_FRAME_WIDTH * COLOR_FRAME_HEIGHT];
 	pDepthRAWBuffer = new ushort[DEPTH_FRAME_WIDTH * DEPTH_FRAME_HEIGHT];
 	pInfraRAWBuffer = new ushort[INFRARED_FRAME_WIDTH * INFRARED_FRAME_HEIGHT];
-
+	pDepthCoordinate = new DepthSpacePoint[COLOR_FRAME_WIDTH * COLOR_FRAME_HEIGHT];
 
 	// Set 0
 	memset( pColorRAWBuffer, 0, COLOR_FRAME_WIDTH * COLOR_FRAME_HEIGHT * sizeof( RGBQUAD ) );
@@ -311,6 +311,56 @@ void CK4Wv2OpenCVModule::UpdateData()
 	}
 }
 
+HRESULT CK4Wv2OpenCVModule::calculateMappedFrame()
+{
+	HRESULT hr = E_FAIL;
+
+	// Depth coordinate mapping
+	if ( pCoordinateMapper != nullptr )
+	{
+		/*
+		// Color 2 Depth Mapping
+		hr = pCoordinateMapper->MapDepthFrameToColorSpace( DEPTH_FRAME_WIDTH * DEPTH_FRAME_HEIGHT, (UINT16*)pTmpDepthBuffer, DEPTH_FRAME_WIDTH * DEPTH_FRAME_HEIGHT, pColorCoodinate );
+		if ( SUCCEEDED( hr ) )
+		{
+		Mat t = Mat( Size( DEPTH_FRAME_WIDTH, DEPTH_FRAME_HEIGHT ), CV_8UC4 );
+		Vec4b* p = t.ptr< Vec4b >( 0 );
+		for ( int idx = 0 ; idx < DEPTH_FRAME_WIDTH * DEPTH_FRAME_HEIGHT ; idx++ )
+		{
+		ColorSpacePoint csp = pColorCoodinate[idx];
+		int colorX = (int)floor( csp.X + 0.5 );
+		int colorY = (int)floor( csp.Y + 0.5 );
+		if ( colorX >= 0 && colorX < COLOR_FRAME_WIDTH && colorY >= 0 && colorY < COLOR_FRAME_HEIGHT )
+		{
+		p[idx] = colorRAWFrameMat.at< Vec4b >( colorY, colorX );
+		}
+		}
+		imshow( "C2D", t );
+		}
+		*/
+		// Depth 2 Color Mapping
+		hr = pCoordinateMapper->MapColorFrameToDepthSpace( DEPTH_FRAME_WIDTH * DEPTH_FRAME_HEIGHT, (UINT16*)pDepthRAWBuffer, COLOR_FRAME_WIDTH * COLOR_FRAME_HEIGHT, pDepthCoordinate );
+		if ( SUCCEEDED( hr ) )
+		{
+			colorMappedFrameMat = Mat::zeros( Size( COLOR_FRAME_WIDTH, COLOR_FRAME_HEIGHT ), CV_16UC1 );
+			short* pMappedFrame = colorMappedFrameMat.ptr< short >( 0 );
+			#pragma omp parallel for
+			for ( int idx = 0 ; idx < COLOR_FRAME_WIDTH * COLOR_FRAME_HEIGHT ; idx++ )
+			{
+				DepthSpacePoint dsp = pDepthCoordinate[idx];
+				int depthX = (int)floor( dsp.X + 0.5 );
+				int depthY = (int)floor( dsp.Y + 0.5 );
+				if ( depthX >= 0 && depthX < DEPTH_FRAME_WIDTH && depthY >= 0 && depthY < DEPTH_FRAME_HEIGHT )
+				{
+					pMappedFrame[idx] = pDepthRAWBuffer[depthY * DEPTH_FRAME_WIDTH + depthX];
+
+				}
+			}
+		}
+	}
+
+	return hr;
+}
 
 template< class T > void CK4Wv2OpenCVModule::SafeRelease( T** ppT )
 {
