@@ -5,24 +5,42 @@
 #include <fstream>
 #include <math.h>
 #include "K4Wv2OpenCVModule.h"
+#include <signal.h>
 #define WINSIZE 300
 
 using namespace cv;
 using namespace std;
+	
+VideoWriter outputVideoRGB;
+VideoWriter outputVideoDepth;	
+ofstream myfile;
+
+
+void my_handler(int s){
+	printf("closing files %d\n",s);
+	outputVideoRGB.release();
+	outputVideoDepth.release();
+	myfile.close();
+
+    exit(0); 
+}
 
 int main( int argc, char* argv[] )
 {
+	signal (SIGINT,my_handler);
 	CK4Wv2OpenCVModule myKinect;
 	myKinect.InitializeKinectDevice();
-	VideoWriter outputVideoRGB;
-	outputVideoRGB.open("rgbVideo.avi",-1,30,cv::Size(WINSIZE,WINSIZE));
-	Mat m = Mat::zeros( Size( WINSIZE, WINSIZE ), CV_16UC1);
 
+	outputVideoRGB.open("rgbVideo.avi",-1,30,cv::Size(WINSIZE,WINSIZE));
+	outputVideoDepth.open("depthVideo.avi",-1,30,cv::Size(WINSIZE,WINSIZE),false);
+
+	myfile.open ("timeStampsForEachFrame.txt");
+	
 	// For measuring the timings
-	int64 t1,t0 = cv::getTickCount();
+	int64 t2,t1,t0 = cv::getTickCount();
 	double fps = 10;
 	int frameProc = 0;
-
+	double timeElapsed;
     for(;;){
 		myKinect.UpdateData();
 		myKinect.calculateMappedFrame();
@@ -43,20 +61,32 @@ int main( int argc, char* argv[] )
 		}
 		cvtColor(img, img, CV_RGBA2RGB);
 		outputVideoRGB << img;
+		outputVideoDepth << dImg;
 
-		if(frameProc % 10 == 0){      
-			t1 = cv::getTickCount();
-			fps = 10.0 / (double(t1-t0)/cv::getTickFrequency()); 
-			t0 = t1;
-			cout << fps<<endl;
-		}
+		//if(frameProc % 10 == 0){      
+		//	t1 = cv::getTickCount();
+		//	fps = 10.0 / (double(t1-t0)/cv::getTickFrequency()); 
+		//	t0 = t1;
+		//	cout << fps<<endl;
+		//}
 				
+		//frameProc++;
+		t1 = cv::getTickCount();
+		timeElapsed =	double(t1-t0)/cv::getTickFrequency();
+		myfile << timeElapsed<< endl;
+		if(frameProc % 10 == 0){
+			fps = 10.0 / (double(t1-t2)/cv::getTickFrequency()); 
+			t2 = t1;
+			cout <<fps<< endl;
+		}
 		frameProc++;
 
-		//imshow("Mywindow",m);
+		//imshow("Mywindow",img);
 		//cvtColor(frame, RGBA, CV_BGR2RGBA, 4);
 		if( waitKey( 30 ) >= 0 ){
 			outputVideoRGB.release();
+			outputVideoDepth.release();
+			myfile.close();
             break;
 		}
 	}
