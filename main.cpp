@@ -32,7 +32,7 @@ int main( int argc, char* argv[] )
 	myKinect.InitializeKinectDevice();
 
 	outputVideoRGB.open("rgbVideo.avi",-1,30,cv::Size(WINSIZE,WINSIZE));
-	outputVideoDepth.open("depthVideo.avi",-1,30,cv::Size(WINSIZE,WINSIZE),false);
+	outputVideoDepth.open("depthVideo.avi",-1 ,30,cv::Size(WINSIZE,WINSIZE),false);
 
 	myfile.open ("timeStampsForEachFrame.txt");
 	
