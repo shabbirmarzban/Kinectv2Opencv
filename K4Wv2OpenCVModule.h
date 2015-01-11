@@ -5,6 +5,7 @@
 #include <opencv2\opencv.hpp>
 // Kinect for Windows SDK 2.0
 #include <Kinect.h>
+#include <Kinect.Face.h>
 
 /*
 #ifdef _DEBUG
@@ -19,6 +20,8 @@
 */
 
 #pragma comment( lib, "Kinect20.lib" )
+#pragma comment( lib, "Kinect20.Face.lib" )
+
 
 // Namespaces
 using namespace std;
@@ -38,35 +41,33 @@ class CK4Wv2OpenCVModule
 	static const int INFRARED_FRAME_WIDTH = 512;
 	static const int INFRARED_FRAME_HEIGHT = 424;
 	
+	bool provideColor;
+	bool provideBody;
+	bool provideFace;
 
-
+	INT64                   m_nStartTime;
+	INT64                   timeStamp;
 
 public:
 	CK4Wv2OpenCVModule();
+	CK4Wv2OpenCVModule(bool provideColor, bool provideBody, bool provideFace);
 	~CK4Wv2OpenCVModule();
 
 	HRESULT InitializeKinectDevice();
 
-
 	// Image frame Mat
 	Mat colorRAWFrameMat;
-	Mat depthRAWFrameMat;
-	Mat infraRAWFrameMat;
-	Mat colorMappedFrameMat;
-	//Mat depthMappedFrameMat;
-	Point2f headPointInDepth;
-	Point2f headPointInColor;
+
 	// Process frame
 	void UpdateData();
+	INT64 GetTimeStamp();
 
 	// Calculate Mapped Frame
-	HRESULT calculateMappedFrame();
-
-	ICoordinateMapper* pCoordinateMapper;
 
 	RGBQUAD* pColorRAWBuffer;
-	ushort* pDepthRAWBuffer;
-	ushort* pInfraRAWBuffer;
+	
+	//ushort* pDepthRAWBuffer;
+	//ushort* pInfraRAWBuffer;
 private:
 	// Device
 	IKinectSensor* pSensor;
@@ -74,12 +75,19 @@ private:
 
 	// Frame reader
 	IMultiSourceFrameReader* pMultiSourceFrameReader;
+	//Face Readers
 
-	// Frame data buffers
+	// Face sources
+	IFaceFrameSource*		m_pFaceFrameSources[BODY_COUNT];
 
-	// Coordinate
-	ColorSpacePoint* pColorCoodinate;
-	DepthSpacePoint* pDepthCoordinate;
+	// Face readers
+	IFaceFrameReader*		m_pFaceFrameReaders[BODY_COUNT];
+
+	// HD Face Sources
+	IHighDefinitionFaceFrameSource* m_pHDFaceFrameSources[BODY_COUNT];
+
+	// HDFace readers
+	IHighDefinitionFaceFrameReader*		m_pHDFaceFrameReaders[BODY_COUNT];
 
 	// Release function
 	template< class T > void SafeRelease( T** ppT );

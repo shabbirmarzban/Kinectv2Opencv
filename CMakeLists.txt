@@ -3,7 +3,7 @@ project( DisplayImage )
 find_package( OpenCV REQUIRED )
 
 set(KINECT_LIB "C:/Program Files/Microsoft SDKs/Kinect/v2.0-DevPreview1404" CACHE FILEPATH "description")
-FIND_LIBRARY(Kinect20_LIBRARIES NAMES Kinect20 Kinect20.lib PATHS "${KINECT_LIB}/lib/x64" DOC "Freetype library")
+FIND_LIBRARY(Kinect20_LIBRARIES NAMES Kinect20 Kinect20.lib PATHS "${KINECT_LIB}/lib/x86" DOC "Freetype library")
 FIND_PATH(Kinect20_INCLUDE_DIRS Kinect.h "${KINECT_LIB}/inc" DOC "Freetype includes")
 INCLUDE_DIRECTORIES(${Kinect20_INCLUDE_DIRS})
 
